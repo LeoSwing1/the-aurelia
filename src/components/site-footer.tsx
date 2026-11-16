@@ -1,0 +1,6 @@
+import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
+export function SiteFooter(){return <footer className="site-footer">
+  <div className="footer-top"><div><div className="footer-brand">THE AURELIA<span>HOTEL & RESORT</span></div><p className="footer-note">A place to pause, gather<br/>and make memories.</p></div><div className="footer-links"><div><span className="footer-label">DISCOVER</span><Link href="/rooms">The Stay</Link><Link href="/weddings">Celebrations</Link><Link href="/venues">Meetings & Events</Link><Link href="/facilities">Experiences</Link></div><div><span className="footer-label">CONNECT</span><Link href="/contact">Contact the hotel <ArrowUpRight size={13}/></Link><Link href="/book">Reservations <ArrowUpRight size={13}/></Link><Link href="/reservation-status">Check reservation status <ArrowUpRight size={13}/></Link></div></div></div>
+  <div className="footer-bottom"><span>© {new Date().getFullYear()} THE AURELIA HOTEL & RESORT</span><span>HOSPITALITY · CELEBRATIONS · EXPERIENCES</span><span>LOCATION & CONTACT DETAILS TO BE CONFIRMED</span></div>
+</footer>}

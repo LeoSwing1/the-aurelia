@@ -1,0 +1,37 @@
+{
+  "name": "the-aurelia",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "check": "npm run lint && npm run typecheck && npm run build",
+    "audit:performance": "npx lighthouse http://localhost:3000 --only-categories=performance,accessibility,best-practices,seo --view"
+  },
+  "dependencies": {
+    "@supabase/ssr": "^0.6.1",
+    "@supabase/supabase-js": "^2.57.0",
+    "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
+    "framer-motion": "^12.23.0",
+    "lucide-react": "^0.468.0",
+    "next": "^15.5.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "zod": "^4.1.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.5",
+    "@types/node": "^22.18.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "eslint": "^9.35.0",
+    "eslint-config-next": "^15.5.0",
+    "postcss": "^8.5.33",
+    "tailwindcss": "^4.3.5",
+    "typescript": "^5.9.2"
+  }
+}

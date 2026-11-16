@@ -1,0 +1,5 @@
+import { SiteHeader } from "@/components/site-header";
+import { SiteFooter } from "@/components/site-footer";
+import { PaymentForm } from "@/components/payment-form";
+export const metadata={title:"Complete Reservation Payment",description:"Complete payment for an approved Aurelia reservation."};
+export default function Pay(){return <><SiteHeader/><main id="main-content"><section className="page-hero"><span className="eyebrow light">SECURE PAYMENT</span><h1>Complete your<br/><em>reservation.</em></h1><p>Enter the booking reference and email address provided by the hotel after approving your reservation.</p></section><section className="enquiry-section"><div><span className="eyebrow">PAYMENT WINDOW</span><h2>One last step<br/><em>before arrival.</em></h2><p>Full payment must be completed within 24 hours of manager approval. A successful checkout is not treated as confirmed until the signed payment notification is verified by the server.</p></div><PaymentForm/></section></main><SiteFooter/></>}

@@ -1,0 +1,22 @@
+export const env = {
+  siteUrl: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
+  supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
+  supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+  supabaseServiceKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+  razorpayKeyId: process.env.RAZORPAY_KEY_ID,
+  razorpayKeySecret: process.env.RAZORPAY_KEY_SECRET,
+  razorpayWebhookSecret: process.env.RAZORPAY_WEBHOOK_SECRET,
+  resendApiKey: process.env.RESEND_API_KEY,
+  emailFrom: process.env.EMAIL_FROM,
+  hotelEmail: process.env.HOTEL_NOTIFICATION_EMAIL,
+  whatsAppPhoneId: process.env.WHATSAPP_PHONE_NUMBER_ID,
+  whatsAppToken: process.env.WHATSAPP_ACCESS_TOKEN,
+  whatsAppAlertTo: process.env.WHATSAPP_ALERT_TO,
+  whatsAppVersion: process.env.WHATSAPP_API_VERSION || "v22.0",
+  twilioAccountSid: process.env.TWILIO_ACCOUNT_SID,
+  twilioAuthToken: process.env.TWILIO_AUTH_TOKEN,
+  twilioFromNumber: process.env.TWILIO_FROM_NUMBER,
+  gaMeasurementId: process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID,
+  googleSiteVerification: process.env.GOOGLE_SITE_VERIFICATION,
+};
+export const hasSupabase = Boolean(env.supabaseUrl && env.supabaseKey && env.supabaseServiceKey);
