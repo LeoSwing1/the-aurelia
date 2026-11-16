@@ -73,3 +73,8 @@ The admin toolbar polls the authenticated `/api/admin/notifications` endpoint ev
 
 ## Guestbook links
 Set `NEXT_PUBLIC_GOOGLE_BUSINESS_URL`, `NEXT_PUBLIC_GOOGLE_REVIEWS_URL` and `NEXT_PUBLIC_INSTAGRAM_URL` to the hotel's verified official profile URLs. Until configured, the corresponding cards remain visibly unavailable. Guestbook copy intentionally contains no fabricated guest reviews, names, ratings or wedding quotations.
+
+
+## Vercel Hobby cron schedule
+
+The included `vercel.json` schedules expired reservation-hold cleanup once daily (`0 0 * * *`) to remain compatible with the Vercel Hobby plan. Configure `CRON_SECRET` as a server-only environment variable in Vercel for Production, Preview, and Development as appropriate. The cron endpoint must validate the `Authorization: Bearer <CRON_SECRET>` header. Daily scheduling means expired holds may remain visible until the next run; use a Vercel plan that supports more frequent cron execution if hourly cleanup is operationally required.
