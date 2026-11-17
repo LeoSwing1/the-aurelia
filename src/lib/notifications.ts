@@ -3,13 +3,59 @@ export function escapeHtml(value: string) {
   return value.replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[character] || character));
 }
 async function deliverEmail(to: string, subject: string, html: string) {
-  if (!env.resendApiKey || !env.emailFrom) return { sent: false, reason: "Email provider not configured" };
-  const response = await fetch("https://api.resend.com/emails", {
-    method: "POST", headers: { Authorization: `Bearer ${env.resendApiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from: env.emailFrom, to: [to], subject, html }),
-  });
-  if (!response.ok) throw new Error(`Email provider returned ${response.status}`);
-  return { sent: true };
+  if (!env.emailFrom) return { sent: false, reason: "Email sender not configured" };
+
+  // Brevo is the primary transactional provider. Resend remains as a
+  // backwards-compatible fallback until the Brevo key is configured.
+  if (env.brevoApiKey) {
+    const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      headers: {
+        "api-key": env.brevoApiKey,
+        "accept": "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        sender: { name: env.emailFromName, email: env.emailFrom },
+        to: [{ email: to }],
+        subject,
+        htmlContent: html,
+        textContent: html
+          .replace(/<\s*br\s*\/?\s*>/gi, "\\n")
+          .replace(/<\/p\s*>/gi, "\\n\\n")
+          .replace(/<[^>]*>/g, " ")
+          .replace(/&nbsp;/g, " ")
+          .replace(/&amp;/g, "&")
+          .replace(/&lt;/g, "<")
+          .replace(/&gt;/g, ">")
+          .replace(/&quot;/g, '"')
+          .replace(/&#39;/g, "'")
+          .replace(/\s+/g, " ")
+          .trim(),
+      }),
+      cache: "no-store",
+    });
+    if (!response.ok) {
+      const detail = await response.text();
+      console.error("Brevo transactional email failed", response.status, detail.slice(0, 1000));
+      throw new Error(`Brevo email provider returned ${response.status}`);
+    }
+    const result = await response.json() as { messageId?: string };
+    return { sent: true, provider: "brevo", messageId: result.messageId };
+  }
+
+  if (env.resendApiKey) {
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${env.resendApiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ from: `${env.emailFromName} <${env.emailFrom}>`, to: [to], subject, html }),
+      cache: "no-store",
+    });
+    if (!response.ok) throw new Error(`Resend email provider returned ${response.status}`);
+    return { sent: true, provider: "resend" };
+  }
+
+  return { sent: false, reason: "Transactional email provider not configured" };
 }
 export async function sendHotelEmail(subject: string, html: string) {
   if (!env.hotelEmail) return { sent: false, reason: "Hotel notification email not configured" };

@@ -189,3 +189,38 @@ body{font-family:Arial,Helvetica,sans-serif;font-display:swap}
 .guestbook-cover-edition{color:#cbb98e;font-size:7px;letter-spacing:.22em}
 .guestbook-controls button:disabled{opacity:.28;cursor:not-allowed}
 @media(max-width:760px){.guestbook-book{min-height:530px;padding:16px 17px 76px 30px}.guestbook-page{height:420px;min-height:420px;padding:27px 22px}.guestbook-page-decoration{margin-top:25px}.guestbook-page-bottom{left:auto;right:auto}.guestbook-front-cover h3{font-size:44px}.guestbook-controls{left:30px}.guestbook-cover-ornament{font-size:7px;letter-spacing:.15em}}
+
+
+/* Focused live-dashboard refresh and loading states. Existing Aurelia layout is preserved. */
+.admin-live-refresh{display:flex;align-items:center;justify-content:flex-end;gap:7px;margin-top:9px;color:#7b867e;font-size:9px;letter-spacing:.04em}
+.refresh-dot{width:6px;height:6px;border-radius:50%;background:#4d9a70;display:inline-block}
+.refresh-dot.is-refreshing{background:#b4935f;animation:aureliaPulse .8s ease-in-out infinite alternate}
+@keyframes aureliaPulse{from{opacity:.35;transform:scale(.85)}to{opacity:1;transform:scale(1.2)}}
+.aurelia-loading-splash{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;background:radial-gradient(ellipse at 50% 42%,#2e4a3c 0,#20372d 58%,#172820 100%);color:#f3ead8;opacity:1;visibility:visible;transition:opacity .35s ease,visibility .35s ease}
+.aurelia-loading-splash.is-leaving{opacity:0;visibility:hidden;pointer-events:none}
+.aurelia-splash-inner{display:flex;flex-direction:column;align-items:center;text-align:center;padding:28px}
+.aurelia-splash-monogram{display:grid;place-items:center;width:66px;height:66px;border:1px solid #c9b27f;border-radius:50%;box-shadow:0 0 0 6px #c9b27f17;color:#ddc99c;font:italic 45px/1 Georgia,serif;margin-bottom:23px}
+.aurelia-splash-name{font:25px/1.2 Georgia,serif;letter-spacing:.19em;color:#f5efdf}
+.aurelia-splash-subtitle{margin-top:9px;color:#d2bd8c;font-size:8px;font-weight:700;letter-spacing:.3em}
+.aurelia-splash-rule{width:72px;height:1px;margin:26px 0 18px;background:#b89c69}
+.aurelia-splash-caption{color:#d5c6a6;font-size:8px;letter-spacing:.2em}
+.aurelia-splash-spinner{width:16px;height:16px;margin-top:20px;border:1px solid #d4c09255;border-top-color:#d4c092;border-radius:50%;animation:aureliaSpin .8s linear infinite}
+@keyframes aureliaSpin{to{transform:rotate(360deg)}}
+.route-loading{min-height:45vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:#53675a;font:12px Georgia,serif;letter-spacing:.18em}
+.route-loading-mark{display:grid;place-items:center;width:44px;height:44px;border:1px solid #b89c69;border-radius:50%;color:#a58a5c;font:italic 30px Georgia,serif}
+.route-loading i{width:24px;height:2px;background:#b89c69;animation:aureliaPulse .8s ease-in-out infinite alternate}
+.admin-loading-state{padding:6px 0;animation:adminSkeletonFade .5s ease both}
+.admin-loading-heading{display:grid;gap:10px;margin-bottom:30px}
+.admin-loading-heading span,.admin-loading-card i,.admin-loading-card b,.admin-loading-card small,.admin-loading-panel>b,.admin-loading-panel>i{display:block;border-radius:3px;background:linear-gradient(90deg,#ecefe9 25%,#f7f8f5 45%,#ecefe9 65%);background-size:220% 100%;animation:adminShimmer 1.25s ease-in-out infinite}
+.admin-loading-heading span:first-child{width:145px;height:10px}.admin-loading-heading span:nth-child(2){width:310px;max-width:75%;height:35px}.admin-loading-heading span:nth-child(3){width:230px;max-width:65%;height:12px}
+.admin-loading-metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px}
+.admin-loading-card{min-height:145px;padding:22px;background:#fff;border:1px solid #e8ebe7}
+.admin-loading-card i{width:60%;height:10px;margin-bottom:22px}.admin-loading-card b{width:45%;height:29px;margin-bottom:15px}.admin-loading-card small{width:75%;height:9px}
+.admin-loading-columns{display:grid;grid-template-columns:1.2fr .8fr;gap:18px;margin-top:22px}
+.admin-loading-panel{min-height:230px;padding:22px;background:#fff;border:1px solid #e8ebe7}
+.admin-loading-panel>b{width:45%;height:22px;margin-bottom:26px}.admin-loading-panel>i{width:100%;height:11px;margin:18px 0}
+@keyframes adminShimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
+@keyframes adminSkeletonFade{from{opacity:.55}to{opacity:1}}
+@media(max-width:950px){.admin-loading-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:760px){.admin-loading-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-loading-columns{grid-template-columns:1fr}.admin-loading-heading span:nth-child(2){font-size:26px}.admin-live-refresh{font-size:8px}}
+@media(prefers-reduced-motion:reduce){.aurelia-loading-splash,.aurelia-loading-splash.is-leaving{transition:none}.aurelia-splash-spinner,.route-loading i,.refresh-dot.is-refreshing,.admin-loading-card i,.admin-loading-card b,.admin-loading-card small,.admin-loading-panel>b,.admin-loading-panel>i{animation:none}}

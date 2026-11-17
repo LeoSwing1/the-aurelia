@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { AnalyticsConsent } from "@/components/analytics-consent";
+import { AureliaLoadingSplash } from "@/components/aurelia-loading-splash";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
 export const metadata: Metadata = {
@@ -24,5 +25,5 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     description: "Hotel and resort offering accommodation, celebrations and event venues.",
     sameAs: [process.env.NEXT_PUBLIC_GOOGLE_BUSINESS_URL, process.env.NEXT_PUBLIC_INSTAGRAM_URL].filter(Boolean),
   };
-  return <html lang="en-IN"><body><a className="skip-link" href="#main-content">Skip to main content</a>{children}<AnalyticsConsent /><script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(hotelSchema) }} /></body></html>;
+  return <html lang="en-IN"><body><a className="skip-link" href="#main-content">Skip to main content</a>{children}<AureliaLoadingSplash /><AnalyticsConsent /><script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(hotelSchema) }} /></body></html>;
 }
