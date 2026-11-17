@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { reservationSchema } from "@/lib/validation";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { reservationReceivedEmail, hotelNoticeEmail } from "@/lib/email-templates";
 
 import {
   sendHotelEmail,
@@ -9,7 +10,6 @@ import {
   sendGuestEmail,
   sendWhatsAppText,
   sendGuestSMS,
-  escapeHtml,
 } from "@/lib/notifications";
 
 export const runtime = "nodejs";
@@ -93,55 +93,24 @@ export async function POST(request: NextRequest) {
     }
 
     // 5. Prepare hotel notification email
-    const hotelEmailHtml = `
-      <h2>New reservation request</h2>
-
-      <p><strong>Reference:</strong>
-        ${escapeHtml(bookingReference)}
-      </p>
-
-      <p><strong>Guest:</strong>
-        ${escapeHtml(payload.name)}
-      </p>
-
-      <p><strong>Email:</strong>
-        ${escapeHtml(payload.email)}
-      </p>
-
-      <p><strong>Phone:</strong>
-        ${escapeHtml(payload.phone)}
-      </p>
-
-      <p><strong>Stay:</strong>
-        ${escapeHtml(payload.checkIn)}
-        to
-        ${escapeHtml(payload.checkOut)}
-      </p>
-
-      <p><strong>Room category:</strong>
-        ${escapeHtml(payload.roomType)}
-      </p>
-
-      <p><strong>Rooms:</strong>
-        ${payload.rooms}
-      </p>
-
-      <p><strong>Adults:</strong>
-        ${payload.adults}
-      </p>
-
-      <p><strong>Children:</strong>
-        ${payload.children}
-      </p>
-
-      <p><strong>Special requests:</strong>
-        ${escapeHtml(payload.message || "None")}
-      </p>
-
-      <p><strong>Status:</strong>
-        Pending approval
-      </p>
-    `;
+    const hotelEmailHtml = hotelNoticeEmail({
+      title: "New reservation request",
+      intro: "A new room reservation request has been submitted and is awaiting review.",
+      rows: [
+        ["Reference", bookingReference],
+        ["Guest", payload.name],
+        ["Email", payload.email],
+        ["Phone", payload.phone],
+        ["Check-in", payload.checkIn],
+        ["Check-out", payload.checkOut],
+        ["Room category", payload.roomType],
+        ["Rooms", String(payload.rooms)],
+        ["Adults", String(payload.adults)],
+        ["Children", String(payload.children)],
+        ["Special requests", payload.message || "None"],
+        ["Status", "Pending approval"],
+      ],
+    });
 
     // 6. Send hotel email independently
     try {
@@ -164,58 +133,16 @@ export async function POST(request: NextRequest) {
     }
 
     // 7. Prepare guest confirmation email
-    const guestEmailHtml = `
-      <h2>We received your stay request</h2>
-
-      <p>Dear ${escapeHtml(payload.name)},</p>
-
-      <p>
-        Thank you for contacting
-        The Aurelia Hotel &amp; Resort.
-      </p>
-
-      <p>
-        We have successfully received your room request.
-      </p>
-
-      <p>
-        <strong>Your booking reference:</strong>
-        ${escapeHtml(bookingReference)}
-      </p>
-
-      <p><strong>Check-in:</strong>
-        ${escapeHtml(payload.checkIn)}
-      </p>
-
-      <p><strong>Check-out:</strong>
-        ${escapeHtml(payload.checkOut)}
-      </p>
-
-      <p><strong>Room category:</strong>
-        ${escapeHtml(payload.roomType)}
-      </p>
-
-      <p><strong>Rooms:</strong>
-        ${payload.rooms}
-      </p>
-
-      <p>
-        This is a request, not a confirmed reservation.
-      </p>
-
-      <p>
-        Our team will review availability and contact you.
-      </p>
-
-      <p>
-        If approved, full payment is due within 24 hours.
-      </p>
-
-      <p>
-        Thank you,<br />
-        The Aurelia Hotel &amp; Resort
-      </p>
-    `;
+    const guestEmailHtml = reservationReceivedEmail({
+      guestName: payload.name,
+      reference: bookingReference,
+      checkIn: payload.checkIn,
+      checkOut: payload.checkOut,
+      roomType: payload.roomType,
+      rooms: payload.rooms,
+      adults: payload.adults,
+      children: payload.children,
+    });
 
     // 8. Send guest email independently
     try {

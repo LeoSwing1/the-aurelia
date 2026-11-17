@@ -3,6 +3,7 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { env } from "@/lib/env";
 import { sendGuestEmail, sendHotelEmail, escapeHtml } from "@/lib/notifications";
+import { paymentConfirmedEmail, hotelNoticeEmail } from "@/lib/email-templates";
 export const runtime = "nodejs";
 export async function POST(request: NextRequest) {
   if (!env.razorpayWebhookSecret) return NextResponse.json({ error: "Webhook is not configured." }, { status: 503 });
@@ -54,11 +55,33 @@ export async function POST(request: NextRequest) {
       const guest = Array.isArray(reservation?.guests) ? reservation?.guests[0] : reservation?.guests;
       if (guest?.email) {
         try {
-          await sendGuestEmail(guest.email, "Your Aurelia reservation payment was received", `<p>Dear ${escapeHtml(guest.full_name || "Guest")},</p><p>We have verified full payment for reservation <strong>${escapeHtml(reservation?.booking_reference || tx.reservation_id)}</strong>. Your reservation is now confirmed by our system.</p><p>Please retain this reference for your arrival.</p>`);
+          await sendGuestEmail(
+            guest.email,
+            "Your Aurelia reservation is confirmed",
+            paymentConfirmedEmail({
+              guestName: guest.full_name || "Guest",
+              reference: reservation?.booking_reference || tx.reservation_id,
+              amount,
+              currency,
+              paymentId: payment.id,
+            })
+          );
         } catch (mailError) { console.error("Guest payment confirmation email failed", mailError); }
       }
       try {
-        await sendHotelEmail("Aurelia reservation payment captured", `<p>Payment verified for reservation ${escapeHtml(reservation?.booking_reference || tx.reservation_id)}.</p><p>Provider payment ID: ${escapeHtml(payment.id)}</p>`);
+        await sendHotelEmail(
+          "Aurelia reservation payment captured",
+          hotelNoticeEmail({
+            title: "Payment successfully verified",
+            intro: "A reservation payment was captured and the signed webhook confirmed the booking.",
+            rows: [
+              ["Reservation", reservation?.booking_reference || tx.reservation_id],
+              ["Amount", `${currency} ${amount.toLocaleString("en-IN")}`],
+              ["Payment ID", payment.id],
+              ["Status", "Confirmed"],
+            ],
+          })
+        );
       } catch (mailError) { console.error("Hotel payment alert email failed", mailError); }
     }
   } else if (event.event === "payment.failed") {
