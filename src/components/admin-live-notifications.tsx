@@ -1,5 +1,7 @@
 "use client";
 
+import { formatHotelDateTime } from "@/lib/time";
+
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Bell, BellRing, CheckCheck, X } from "lucide-react";
 
@@ -70,7 +72,7 @@ export function AdminLiveNotifications() {
       <header><div><strong>Live notifications</strong><small>Refreshes every 15 seconds</small></div><button type="button" onClick={() => setOpen(false)} aria-label="Close notifications"><X size={17}/></button></header>
       <div className="admin-notification-settings"><span>Chrome notifications: {permission === "granted" ? "Enabled" : permission === "denied" ? "Blocked in browser settings" : permission === "unsupported" ? "Not supported" : "Not enabled"}</span>{permission !== "granted" && permission !== "denied" && permission !== "unsupported" && <button type="button" onClick={enableBrowserNotifications}>Enable</button>}</div>
       {error && <p className="admin-notification-error">{error}</p>}
-      <div className="admin-notification-list">{items.map((n) => <article key={n.id} className={n.read_at ? "is-read" : "is-unread"}><div><strong>{n.title}</strong><small>{n.category} · {new Date(n.created_at).toLocaleString("en-IN")}</small></div><p>{n.body}</p>{!n.read_at && <button type="button" onClick={() => void markRead(n.id)}><CheckCheck size={14}/> Mark read</button>}</article>)}{!items.length && <p className="admin-notification-empty">No new activity yet. New booking and enquiry activity will appear here.</p>}</div>
+      <div className="admin-notification-list">{items.map((n) => <article key={n.id} className={n.read_at ? "is-read" : "is-unread"}><div><strong>{n.title}</strong><small>{n.category} · {formatHotelDateTime(n.created_at)}</small></div><p>{n.body}</p>{!n.read_at && <button type="button" onClick={() => void markRead(n.id)}><CheckCheck size={14}/> Mark read</button>}</article>)}{!items.length && <p className="admin-notification-empty">No new activity yet. New booking and enquiry activity will appear here.</p>}</div>
     </section>}
   </div>;
 }

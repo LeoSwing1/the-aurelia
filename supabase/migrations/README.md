@@ -15,3 +15,8 @@ After applying it:
 Do not create anonymous insert policies for reservations, payments, event enquiries or guest documents. Public writes are handled by validated Next.js server endpoints using the server-only service role key.
 
 Apply `202611160004_guest_consent_and_analytics.sql` after migrations 001–003. It adds reservation-level essential-contact and channel-specific marketing consent fields. Do not skip this migration before using the updated booking form.
+
+
+## 2026-11-18 — Hotel operations scheduler
+
+Apply `202611180001_hotel_operations_scheduler.sql` after the existing payment reconciliation migration. It creates the hotel calendar, scheduled activity records, and deduplicated email reminder queue. Configure `CRON_SECRET` in Vercel and ensure the deployment scheduler can invoke `/api/cron/scheduled-reminders` every minute. All schedule timestamps are stored as UTC `timestamptz` and entered/displayed in `Asia/Kolkata`.

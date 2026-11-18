@@ -10,7 +10,7 @@ export const env = {
   resendApiKey: process.env.RESEND_API_KEY,
   emailFrom: process.env.EMAIL_FROM,
   emailFromName: process.env.EMAIL_FROM_NAME || "The Aurelia Hotel & Resort",
-  hotelEmail: process.env.HOTEL_NOTIFICATION_EMAIL,
+  hotelEmail: process.env.HOTEL_NOTIFICATION_EMAIL || "leovsmgrowth@gmail.com",
   whatsAppPhoneId: process.env.WHATSAPP_PHONE_NUMBER_ID,
   whatsAppToken: process.env.WHATSAPP_ACCESS_TOKEN,
   whatsAppAlertTo: process.env.WHATSAPP_ALERT_TO,

@@ -12,6 +12,7 @@ const nav=[
  ["Housekeeping","/admin/housekeeping",["SUPER_ADMIN","GENERAL_MANAGER","HOUSEKEEPING","RECEPTION"]],
  ["Staff & Access","/admin/staff",["SUPER_ADMIN","GENERAL_MANAGER"]],
  ["Notifications","/admin/notifications",["SUPER_ADMIN","GENERAL_MANAGER","RECEPTION","EVENT_MANAGER","HOUSEKEEPING","FINANCE","RESTAURANT_STAFF"]],
+ ["Schedule & Calendar","/admin/schedule",["SUPER_ADMIN","GENERAL_MANAGER","RECEPTION","EVENT_MANAGER","HOUSEKEEPING","FINANCE"]],
  ["Integrations","/admin/integrations",["SUPER_ADMIN","GENERAL_MANAGER"]],
  ["Settings","/admin/settings",["SUPER_ADMIN","GENERAL_MANAGER"]],
 ] as const;

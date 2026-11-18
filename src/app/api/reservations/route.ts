@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { reservationSchema } from "@/lib/validation";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { env } from "@/lib/env";
 import { reservationReceivedEmail, hotelNoticeEmail } from "@/lib/email-templates";
 
 import {
@@ -119,10 +120,12 @@ export async function POST(request: NextRequest) {
         hotelEmailHtml
       );
 
+      if (!hotelResult.sent) throw new Error(hotelResult.reason);
       console.info("AURELIA_HOTEL_EMAIL_RESULT", {
         reference: bookingReference,
-        recipient: "hotel notification address",
-        result: hotelResult,
+        recipient: env.hotelEmail,
+        provider: hotelResult.provider,
+        messageId: hotelResult.messageId,
       });
     } catch (notificationError) {
       console.error(
@@ -152,10 +155,12 @@ export async function POST(request: NextRequest) {
         guestEmailHtml
       );
 
+      if (!guestResult.sent) throw new Error(guestResult.reason);
       console.info("AURELIA_GUEST_EMAIL_RESULT", {
         reference: bookingReference,
         recipient: payload.email,
-        result: guestResult,
+        provider: guestResult.provider,
+        messageId: guestResult.messageId,
       });
     } catch (notificationError) {
       console.error(

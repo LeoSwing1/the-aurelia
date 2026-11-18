@@ -1,0 +1,44 @@
+"use client";
+
+import { type FormEvent, useEffect, useMemo, useState } from "react";
+import { CalendarDays, Clock3, Plus, RefreshCw, CheckCircle2, XCircle } from "lucide-react";
+
+type Schedule = { id: string; title: string; description: string; category: string; starts_at: string; ends_at: string | null; assigned_to: string | null; notify_email: string; reminder_minutes_before: number; status: string };
+const categories = ["RESERVATION", "GUEST", "HOUSEKEEPING", "EVENT", "STAFF", "PAYMENT", "OTHER"];
+const pad = (n: number) => String(n).padStart(2, "0");
+function istInput(iso: string) {
+  const parts = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date(iso));
+  const v = Object.fromEntries(parts.map(p => [p.type, p.value]));
+  return `${v.year}-${v.month}-${v.day}T${v.hour}:${v.minute}`;
+}
+function parseIST(value: string) {
+  const [date, time] = value.split("T"); const [y, m, d] = date.split("-").map(Number); const [hh, mm] = time.split(":").map(Number);
+  return new Date(Date.UTC(y, m - 1, d, hh, mm) - 330 * 60000).toISOString();
+}
+function fmt(iso: string) { return new Intl.DateTimeFormat("en-IN", { timeZone: "Asia/Kolkata", weekday: "short", day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: true }).format(new Date(iso)) + " IST"; }
+function todayIST() { return istInput(new Date().toISOString()).slice(0, 10); }
+
+export function ScheduleCalendar({ initialSchedules, defaultEmail }: { initialSchedules: Schedule[]; defaultEmail: string }) {
+  const [schedules, setSchedules] = useState(initialSchedules);
+  const [now, setNow] = useState(new Date());
+  const [month, setMonth] = useState(todayIST().slice(0, 7));
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState("");
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState({ title: "", description: "", category: "OTHER", startsAt: `${todayIST()}T10:00`, endsAt: "", assignedTo: "", notifyEmail: defaultEmail, reminderMinutesBefore: "60" });
+  useEffect(() => { const id = window.setInterval(() => setNow(new Date()), 1000); return () => window.clearInterval(id); }, []);
+  const monthItems = useMemo(() => schedules.filter(s => istInput(s.starts_at).startsWith(month)), [schedules, month]);
+  const grouped = useMemo(() => monthItems.reduce<Record<string, Schedule[]>>((acc, item) => { const day = istInput(item.starts_at).slice(0, 10); (acc[day] ||= []).push(item); return acc; }, {}), [monthItems]);
+  const upcoming = schedules.filter(s => s.status === "SCHEDULED" && new Date(s.starts_at).getTime() >= Date.now()).sort((a,b) => a.starts_at.localeCompare(b.starts_at)).slice(0, 8);
+  async function refresh() { const r = await fetch("/api/admin/schedules", { cache: "no-store" }); if (r.ok) { const d = await r.json(); setSchedules(d.schedules || []); } }
+  async function create(e: FormEvent) { e.preventDefault(); setBusy(true); setMessage(""); try { const r = await fetch("/api/admin/schedules", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...form, startsAt: parseIST(form.startsAt), endsAt: form.endsAt ? parseIST(form.endsAt) : null, reminderMinutesBefore: Number(form.reminderMinutesBefore) }) }); const d = await r.json(); if (!r.ok) throw new Error(d.error || "Could not create schedule"); setMessage("Schedule created. Email reminder queued."); setShowForm(false); setForm(v => ({ ...v, title: "", description: "" })); await refresh(); } catch (e) { setMessage(e instanceof Error ? e.message : "Something went wrong"); } finally { setBusy(false); } }
+  async function updateStatus(id: string, status: string) { const r = await fetch("/api/admin/schedules", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, status }) }); if (r.ok) await refresh(); else setMessage("Unable to update this activity."); }
+  const clock = new Intl.DateTimeFormat("en-IN", { timeZone: "Asia/Kolkata", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true }).format(now);
+  const dateLabel = new Intl.DateTimeFormat("en-IN", { timeZone: "Asia/Kolkata", weekday: "long", day: "2-digit", month: "long", year: "numeric" }).format(now);
+  return <div className="schedule-layout">
+    <section className="schedule-clock panel"><div><span className="eyebrow">LIVE HOTEL CLOCK</span><strong><Clock3 size={21}/> {clock}</strong><span>{dateLabel} · IST (UTC+05:30)</span></div><div className="schedule-clock-actions"><button className="admin-action" onClick={() => setShowForm(v => !v)}><Plus size={16}/> Add activity</button><button className="admin-secondary" onClick={() => void refresh()}><RefreshCw size={15}/> Refresh</button></div></section>
+    {message && <p className="note-panel" role="status">{message}</p>}
+    {showForm && <form className="panel schedule-form" onSubmit={create}><h2>Create scheduled activity</h2><div className="schedule-fields"><label>Activity title<input required minLength={2} maxLength={160} value={form.title} onChange={e=>setForm(v=>({...v,title:e.target.value}))} placeholder="e.g. Guest arrival – Room 204"/></label><label>Category<select value={form.category} onChange={e=>setForm(v=>({...v,category:e.target.value}))}>{categories.map(c=><option key={c}>{c}</option>)}</select></label><label>Start date &amp; time (IST)<input type="datetime-local" required value={form.startsAt} onChange={e=>setForm(v=>({...v,startsAt:e.target.value}))}/></label><label>End date &amp; time (IST)<input type="datetime-local" value={form.endsAt} onChange={e=>setForm(v=>({...v,endsAt:e.target.value}))}/></label><label>Assigned person / department<input value={form.assignedTo} onChange={e=>setForm(v=>({...v,assignedTo:e.target.value}))} placeholder="Reception / Housekeeping"/></label><label>Reminder email<input type="email" required value={form.notifyEmail} onChange={e=>setForm(v=>({...v,notifyEmail:e.target.value}))}/></label><label>Send reminder<select value={form.reminderMinutesBefore} onChange={e=>setForm(v=>({...v,reminderMinutesBefore:e.target.value}))}><option value="0">At scheduled time</option><option value="15">15 minutes before</option><option value="30">30 minutes before</option><option value="60">1 hour before</option><option value="180">3 hours before</option><option value="1440">1 day before</option><option value="10080">1 week before</option></select></label><label className="schedule-description">Details<textarea rows={3} maxLength={3000} value={form.description} onChange={e=>setForm(v=>({...v,description:e.target.value}))} placeholder="Guest details, preparation notes or instructions"/></label></div><div className="schedule-form-actions"><button className="admin-action" disabled={busy}>{busy?"Saving…":"Save schedule & reminder"}</button><button type="button" className="admin-secondary" onClick={()=>setShowForm(false)}>Cancel</button></div><small>Reminder emails are sent by the secure scheduled job. Times are interpreted as India Standard Time.</small></form>}
+    <div className="schedule-content"><section className="panel"><div className="schedule-month-head"><h2><CalendarDays size={19}/> Calendar</h2><input aria-label="Calendar month" type="month" value={month} onChange={e=>setMonth(e.target.value)}/></div><div className="schedule-calendar-list">{Object.entries(grouped).sort(([a],[b])=>a.localeCompare(b)).map(([day, items])=><div className="schedule-day" key={day}><div className="schedule-day-date">{new Intl.DateTimeFormat("en-IN",{timeZone:"Asia/Kolkata",weekday:"short",day:"2-digit",month:"short"}).format(new Date(`${day}T00:00:00+05:30`))}</div><div className="schedule-day-items">{items.map(item=><article className="schedule-item" key={item.id}><div><strong>{item.title}</strong><span>{fmt(item.starts_at)} · {item.category}</span>{item.assigned_to&&<small>Assigned: {item.assigned_to}</small>}</div><span className="pill">{item.status}</span><div className="schedule-item-actions">{item.status==="SCHEDULED"&&<><button title="Mark completed" onClick={()=>void updateStatus(item.id,"COMPLETED")}><CheckCircle2 size={16}/></button><button title="Cancel activity" onClick={()=>void updateStatus(item.id,"CANCELLED")}><XCircle size={16}/></button></>}</div></article>)}</div></div>)}{!Object.keys(grouped).length&&<p className="admin-lead">No activities scheduled for this month yet.</p>}</div></section><aside className="panel schedule-upcoming"><h2>Upcoming activities</h2>{upcoming.map(item=><article key={item.id}><strong>{item.title}</strong><span>{fmt(item.starts_at)}</span><small>{item.category} · Reminder {item.reminder_minutes_before===0?"at start":`${item.reminder_minutes_before} min before`}</small></article>)}{!upcoming.length&&<p className="admin-lead">No upcoming activities.</p>}</aside></div>
+  </div>;
+}
