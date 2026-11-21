@@ -3,8 +3,7 @@
 import { formatHotelDateTime } from "@/lib/time";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { CalendarDays, Clock3, ArrowRight } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 type Metric = {
   label: string;
@@ -20,8 +19,6 @@ type Notice = {
   read_at: string | null;
 };
 
-type OverviewSchedule = { id: string; title: string; category: string; starts_at: string; assigned_to: string | null; status: string };
-
 type Snapshot = {
   metrics: Metric[];
   revenue: number;
@@ -32,9 +29,6 @@ export function AdminLiveOverview({ initial }: { initial: Snapshot }) {
   const [snapshot, setSnapshot] = useState(initial);
   const [refreshing, setRefreshing] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
-  const [hotelNow, setHotelNow] = useState<Date | null>(null);
-  const [schedules, setSchedules] = useState<OverviewSchedule[]>([]);
-  const [scheduleError, setScheduleError] = useState(false);
   const inFlight = useRef(false);
 
   const refresh = useCallback(async () => {
@@ -64,45 +58,6 @@ export function AdminLiveOverview({ initial }: { initial: Snapshot }) {
       setRefreshing(false);
     }
   }, []);
-
-  useEffect(() => {
-    const updateClock = () => setHotelNow(new Date());
-    updateClock();
-    const clockTimer = window.setInterval(updateClock, 1000);
-    return () => window.clearInterval(clockTimer);
-  }, []);
-
-  useEffect(() => {
-    let active = true;
-    const loadSchedules = async () => {
-      try {
-        const response = await fetch("/api/admin/schedules", { cache: "no-store" });
-        if (!response.ok) throw new Error("Schedule fetch failed");
-        const data = await response.json();
-        if (active) {
-          setSchedules((data.schedules || []).filter((item: OverviewSchedule) => item.status === "SCHEDULED"));
-          setScheduleError(false);
-        }
-      } catch {
-        if (active) setScheduleError(true);
-      }
-    };
-    void loadSchedules();
-    const timer = window.setInterval(() => void loadSchedules(), 60000);
-    return () => { active = false; window.clearInterval(timer); };
-  }, []);
-
-  const upcomingSchedules = useMemo(() => schedules
-    .filter(item => new Date(item.starts_at).getTime() >= Date.now())
-    .sort((a, b) => a.starts_at.localeCompare(b.starts_at))
-    .slice(0, 4), [schedules]);
-
-  const hotelClock = hotelNow ? new Intl.DateTimeFormat("en-IN", {
-    timeZone: "Asia/Kolkata", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true,
-  }).format(hotelNow) : "—:—:—";
-  const hotelDate = hotelNow ? new Intl.DateTimeFormat("en-IN", {
-    timeZone: "Asia/Kolkata", weekday: "long", day: "2-digit", month: "long", year: "numeric",
-  }).format(hotelNow) : "Loading hotel date…";
 
   useEffect(() => {
     const timer = window.setInterval(() => void refresh(), 10000);
@@ -140,35 +95,6 @@ export function AdminLiveOverview({ initial }: { initial: Snapshot }) {
           <span>Captured transactions only</span>
         </div>
       </div>
-
-      <section className="panel overview-schedule-panel">
-        <div className="panel-heading">
-          <div>
-            <span className="section-kicker">HOTEL OPERATIONS · IST</span>
-            <h2>Clock &amp; Schedule</h2>
-          </div>
-          <Link href="/admin/schedule" className="text-link">OPEN CALENDAR <ArrowRight size={14} /></Link>
-        </div>
-        <div className="overview-schedule-grid">
-          <div className="overview-clock-card">
-            <div className="overview-clock-icon"><Clock3 size={19} /></div>
-            <strong>{hotelClock}</strong>
-            <span>{hotelDate}</span>
-            <small>India Standard Time · UTC+05:30</small>
-          </div>
-          <div className="overview-upcoming-card">
-            <div className="overview-upcoming-title"><CalendarDays size={18} /><strong>Upcoming activities</strong></div>
-            {scheduleError ? (
-              <p className="admin-lead">Schedule information is temporarily unavailable. Open the calendar to retry.</p>
-            ) : upcomingSchedules.length ? upcomingSchedules.map(item => (
-              <article className="overview-schedule-row" key={item.id}>
-                <div><strong>{item.title}</strong><small>{item.category}{item.assigned_to ? ` · ${item.assigned_to}` : ""}</small></div>
-                <time>{formatHotelDateTime(item.starts_at)}</time>
-              </article>
-            )) : <p className="admin-lead">No upcoming activities. Add reservations, guest tasks, housekeeping, events or staff reminders to your calendar.</p>}
-          </div>
-        </div>
-      </section>
 
       <div className="admin-live-refresh" aria-live="polite">
         <span

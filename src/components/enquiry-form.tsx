@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { ThankYouDialog } from "@/components/thank-you-dialog";
+import { trackEvent } from "@/lib/analytics";
 type FormState="idle"|"sending"|"success"|"error";
 export function EnquiryForm({kind="General enquiry"}:{kind?:string}){
  const [state,setState]=useState<FormState>("idle");const [notice,setNotice]=useState("");const [showThanks,setShowThanks]=useState(false);
@@ -8,7 +9,7 @@ export function EnquiryForm({kind="General enquiry"}:{kind?:string}){
  async function submit(e:React.FormEvent<HTMLFormElement>){
   e.preventDefault();const formElement=e.currentTarget;setState("sending");setNotice("");const form=new FormData(formElement);
   const payload={name:String(form.get("name")||""),email:String(form.get("email")||""),phone:String(form.get("phone")||""),eventType:String(form.get("type")||"Other"),eventDate:String(form.get("eventDate")||""),guests:Number(form.get("guests")||1),venue:String(form.get("venue")||""),message:String(form.get("message")||"")};
-  try{const response=await fetch(isEvent?"/api/events":"/api/contact",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(isEvent?payload:{name:payload.name,email:payload.email,phone:payload.phone,message:payload.message,kind})});const result=await response.json();if(!response.ok)throw new Error(result.error||"Unable to submit enquiry.");setState("success");setNotice(result.message||"Your enquiry has been received.");setShowThanks(true);formElement.reset();}
+  try{const response=await fetch(isEvent?"/api/events":"/api/contact",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(isEvent?payload:{name:payload.name,email:payload.email,phone:payload.phone,message:payload.message,kind})});const result=await response.json();if(!response.ok)throw new Error(result.error||"Unable to submit enquiry.");trackEvent("generate_lead",{lead_type:isEvent?"event_enquiry":"contact",enquiry_kind:String(kind||"General")});setState("success");setNotice(result.message||"Your enquiry has been received.");setShowThanks(true);formElement.reset();}
   catch(error){setState("error");setNotice(error instanceof Error?error.message:"Something went wrong. Please try again.");}
  }
  const today=new Date();const minDate=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,"0")}-${String(today.getDate()).padStart(2,"0")}`;

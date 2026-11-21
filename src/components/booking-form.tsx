@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { ThankYouDialog } from "@/components/thank-you-dialog";
+import { trackEvent } from "@/lib/analytics";
 
 type FormState = "idle" | "sending" | "success" | "error";
 type RoomOption = { code: string; name: string; base_rate: number | null; currency: string; max_adults?: number; max_children?: number };
@@ -95,6 +96,7 @@ export function BookingForm() {
       const response = await fetch("/api/reservations", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "Unable to submit request.");
+      trackEvent("generate_lead", { lead_type: "room_reservation", room_type: String(payload.roomType), rooms: Number(payload.rooms) });
       setReference(result.reference || ""); setState("success"); setMessage(result.message || "Request received."); setShowThanks(true);
       formElement.reset(); setCheckIn(""); setCheckOut(""); setAdults(2); setChildren(0); setRooms(1);
     } catch (err) { setState("error"); setMessage(err instanceof Error ? err.message : "Something went wrong."); }

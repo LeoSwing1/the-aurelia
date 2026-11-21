@@ -1,5 +1,7 @@
+import { resolveSiteUrl } from "@/lib/site-url";
+
 export const env = {
-  siteUrl: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
+  siteUrl: resolveSiteUrl(),
   supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
   supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
   supabaseServiceKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
@@ -20,5 +22,6 @@ export const env = {
   twilioFromNumber: process.env.TWILIO_FROM_NUMBER,
   gaMeasurementId: process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID,
   googleSiteVerification: process.env.GOOGLE_SITE_VERIFICATION,
+  googleReviewsUrl: process.env.NEXT_PUBLIC_GOOGLE_REVIEWS_URL || process.env.NEXT_PUBLIC_GOOGLE_REVIEW_URL,
 };
 export const hasSupabase = Boolean(env.supabaseUrl && env.supabaseKey && env.supabaseServiceKey);

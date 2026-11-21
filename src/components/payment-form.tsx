@@ -1,4 +1,5 @@
 "use client";
+import { trackEvent } from "@/lib/analytics";
 
 import { useEffect, useState } from "react";
 
@@ -69,12 +70,15 @@ export function PaymentForm() {
         order_id: order.orderId,
         prefill: { email: email.trim() },
         theme: { color: "#20372d" },
-        handler: () =>
+        handler: () => {
+          trackEvent("add_payment_info", { currency: order.currency, value: Number(order.amount) / 100, payment_type: "razorpay" });
           setNotice(
             "Payment submitted. The hotel will confirm your reservation after the payment provider's signed webhook verifies the payment."
-          ),
+          );
+        },
       });
 
+      trackEvent("begin_checkout", { currency: order.currency, value: Number(order.amount) / 100 });
       checkout.open();
     } catch (err) {
       setNotice(

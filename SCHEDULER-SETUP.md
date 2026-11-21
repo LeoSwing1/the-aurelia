@@ -15,7 +15,12 @@
    - `HOTEL_NOTIFICATION_EMAIL=leovsmgrowth@gmail.com`
    - `CRON_SECRET` to a long random secret shared only with the deployment.
 3. Confirm the existing Brevo settings are present: `BREVO_API_KEY`, `EMAIL_FROM`, and `EMAIL_FROM_NAME`.
-4. Deploy the updated project. `vercel.json` registers `/api/cron/scheduled-reminders` to run every minute. Confirm the Vercel plan supports the configured cron frequency; if not, use a trusted scheduler to call the same endpoint once per minute with `Authorization: Bearer <CRON_SECRET>`.
+4. Deploy the updated project. `vercel.json` registers only daily crons, because the Vercel Hobby plan **fails the whole deployment** for any cron that runs more than once a day. Production then keeps serving the previous build, and `/api/cron/scheduled-reminders` returns 404. The daily `scheduled-reminders` entry is only a safety net.
+4a. Turn on the every-minute trigger in Supabase:
+   - In the SQL Editor, store the two Vault secrets listed at the top of `supabase/migrations/202611180002_scheduler_pg_cron_trigger.sql`. Use the production domain, and the same `CRON_SECRET` value that is set in Vercel.
+   - Run that migration.
+   - Verify it with `select * from cron.job_run_details order by start_time desc limit 5;` and `select status_code, content from net._http_response order by created desc limit 5;`. The `status_code` must be `200`.
+   - On the Vercel Pro plan, you can instead set the `scheduled-reminders` schedule in `vercel.json` back to `* * * * *` and unschedule the Supabase job with `select cron.unschedule('aurelia-scheduled-reminders');`. Do not run both.
 5. Open `/admin/schedule`, create a test activity a few minutes in the future, choose “At scheduled time”, and confirm the email arrives. Check the reminder row status in `hotel_schedule_reminders` and the Brevo activity log.
 
 ## Time handling

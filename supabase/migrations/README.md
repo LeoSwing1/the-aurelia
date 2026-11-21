@@ -19,4 +19,9 @@ Apply `202611160004_guest_consent_and_analytics.sql` after migrations 001–003.
 
 ## 2026-11-18 — Hotel operations scheduler
 
-Apply `202611180001_hotel_operations_scheduler.sql` after the existing payment reconciliation migration. It creates the hotel calendar, scheduled activity records, and deduplicated email reminder queue. Configure `CRON_SECRET` in Vercel and ensure the deployment scheduler can invoke `/api/cron/scheduled-reminders` every minute. All schedule timestamps are stored as UTC `timestamptz` and entered/displayed in `Asia/Kolkata`.
+Apply `202611180001_hotel_operations_scheduler.sql` after the existing payment reconciliation migration. It creates the hotel calendar, scheduled activity records, and deduplicated email reminder queue. Configure `CRON_SECRET` in Vercel and apply `202611180002_scheduler_pg_cron_trigger.sql` (Supabase pg_cron calls `/api/cron/scheduled-reminders` every minute, because Vercel Hobby only allows daily crons). All schedule timestamps are stored as UTC `timestamptz` and entered/displayed in `Asia/Kolkata`.
+
+
+## 2026-11-18 — Post-stay Google review requests
+
+Apply `202611180003_google_review_requests.sql` after `202611180002`. It creates `guest_review_requests`, a trigger that queues one request when a consenting guest is checked out (sent 3 hours later), and a 15-minute pg_cron job that calls `/api/cron/review-requests` using the same Vault secrets. Set `NEXT_PUBLIC_GOOGLE_REVIEWS_URL`; without it nothing is sent.

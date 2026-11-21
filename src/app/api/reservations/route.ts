@@ -158,7 +158,7 @@ export async function POST(request: NextRequest) {
       if (!guestResult.sent) throw new Error(guestResult.reason);
       console.info("AURELIA_GUEST_EMAIL_RESULT", {
         reference: bookingReference,
-        recipient: payload.email,
+        recipient: payload.email.replace(/^(.{2}).*(@.*)$/, "$1***$2"), // no full guest email in logs
         provider: guestResult.provider,
         messageId: guestResult.messageId,
       });

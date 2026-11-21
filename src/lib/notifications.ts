@@ -50,7 +50,8 @@ type EmailResult =
 async function deliverEmail(
   to: string,
   subject: string,
-  html: string
+  html: string,
+  replyTo?: string
 ): Promise<EmailResult> {
   if (!env.emailFrom) {
     return {
@@ -75,6 +76,7 @@ async function deliverEmail(
             email: env.emailFrom,
           },
           to: [{ email: to }],
+          ...(replyTo ? { replyTo: { email: replyTo, name: env.emailFromName } } : {}),
           subject,
           htmlContent: html,
           textContent: htmlToText(html),
@@ -121,6 +123,7 @@ async function deliverEmail(
         body: JSON.stringify({
           from: `${env.emailFromName} <${env.emailFrom}>`,
           to: [to],
+          ...(replyTo ? { reply_to: replyTo } : {}),
           subject,
           html,
           text: htmlToText(html),
@@ -180,7 +183,9 @@ export async function sendGuestEmail(
   subject: string,
   html: string
 ): Promise<EmailResult> {
-  return deliverEmail(to, subject, html);
+  // Guest replies (questions, feedback) go to the hotel inbox, not to a no-reply sender.
+  const replyTo = env.hotelEmail && env.hotelEmail.toLowerCase() !== env.emailFrom?.toLowerCase() ? env.hotelEmail : undefined;
+  return deliverEmail(to, subject, html, replyTo);
 }
 
 /**

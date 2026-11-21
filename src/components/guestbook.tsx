@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { useState, type ReactNode } from "react";
+import { trackEvent } from "@/lib/analytics";
+import { AnimatePresence, LazyMotion, domAnimation, m } from "framer-motion";
 import { ArrowLeft, ArrowRight, ExternalLink, Instagram, MapPin, Quote, Star, Heart, BookOpen, Sparkles } from "lucide-react";
 
 const pages = [
@@ -29,8 +30,8 @@ export function Guestbook() {
       <div className="guestbook-book-shell">
         <div className="guestbook-book" aria-label={isCover ? "Guestbook front cover" : `Guestbook page ${page + 1} of 5`}>
           <div className="guestbook-cover-edge"/><div className="guestbook-spine" aria-hidden="true"/><div className="guestbook-page-stack" aria-hidden="true"/>
-          <AnimatePresence mode="wait" initial={false}>
-            {isCover ? <motion.article key="cover" className="guestbook-page guestbook-front-cover" initial={{ rotateY: 82, opacity: .25, x: 14 }} animate={{ rotateY: 0, opacity: 1, x: 0 }} exit={{ rotateY: -82, opacity: .1, x: -12 }} transition={{ duration: .68, ease: [0.22, 1, .36, 1] }}>
+          <LazyMotion features={domAnimation} strict><AnimatePresence mode="wait" initial={false}>
+            {isCover ? <m.article key="cover" className="guestbook-page guestbook-front-cover" initial={{ rotateY: 82, opacity: .25, x: 14 }} animate={{ rotateY: 0, opacity: 1, x: 0 }} exit={{ rotateY: -82, opacity: .1, x: -12 }} transition={{ duration: .68, ease: [0.22, 1, .36, 1] }}>
               <div className="guestbook-cover-ornament"><Sparkles size={18}/><span>THE AURELIA COLLECTION</span><Sparkles size={18}/></div>
               <div className="guestbook-cover-monogram">A</div>
               <span className="guestbook-cover-kicker">HOTEL &amp; RESORT</span>
@@ -38,24 +39,33 @@ export function Guestbook() {
               <p>A collection of moments, celebrations<br/>and memories made here.</p>
               <div className="guestbook-cover-rule"><span/><span>✦</span><span/></div>
               <span className="guestbook-cover-edition">AURELIA · EST. WITH HOSPITALITY</span>
-            </motion.article> : <motion.article key={page} className="guestbook-page" initial={{ rotateY: 82, opacity: .25, x: 14 }} animate={{ rotateY: 0, opacity: 1, x: 0 }} exit={{ rotateY: -82, opacity: .1, x: -12 }} transition={{ duration: .68, ease: [0.22, 1, .36, 1] }}>
+            </m.article> : <m.article key={page} className="guestbook-page" initial={{ rotateY: 82, opacity: .25, x: 14 }} animate={{ rotateY: 0, opacity: 1, x: 0 }} exit={{ rotateY: -82, opacity: .1, x: -12 }} transition={{ duration: .68, ease: [0.22, 1, .36, 1] }}>
               <div className="guestbook-page-top"><span>{current!.type}</span><BookOpen size={17}/></div>
               <span className="guestbook-page-decoration">{current!.decoration}</span>
               <h3>{current!.title}</h3><p>{current!.copy}</p><span className="guestbook-signoff">{current!.sign}</span>
               <div className="guestbook-page-bottom"><span>THE AURELIA HOTEL &amp; RESORT</span><span>{String(page + 1).padStart(2, "0")} / 05</span></div>
-            </motion.article>}
-          </AnimatePresence>
+            </m.article>}
+          </AnimatePresence></LazyMotion>
           <div className="guestbook-controls"><button type="button" onClick={() => turn(-1)} disabled={isCover} aria-label="Previous guestbook page"><ArrowLeft size={17}/></button><span>{isCover ? "COVER" : `PAGE  ${String(page + 1).padStart(2, "0")}  /  05`}</span><button type="button" onClick={() => turn(1)} disabled={page === 4} aria-label="Turn to next guestbook page"><ArrowRight size={17}/></button></div>
         </div>
         <div className="guestbook-page-dots" aria-label="Choose guestbook page"><button type="button" aria-label="Front cover" aria-current={isCover ? "page" : undefined} onClick={() => goTo(-1)}/>{pages.map((item, index) => <button key={item.type} type="button" aria-label={`Go to page ${index + 1}`} aria-current={page === index ? "page" : undefined} onClick={() => goTo(index)}/>)}</div>
       </div>
       <aside className="guestbook-links"><span className="eyebrow">OUTSIDE THE PAGES</span><h3>Find us. Follow us. <em>Tell your story.</em></h3><p>Official hotel links for directions, updates and genuine guest reviews.</p>
-        <a className="guestbook-social-card google" href={googleBusiness || undefined} target={googleBusiness ? "_blank" : undefined} rel="noreferrer" aria-disabled={!googleBusiness}><span className="guestbook-card-icon"><MapPin size={20}/></span><span><strong>Google Business</strong><small>Find the hotel and plan your visit</small></span><ExternalLink size={15}/></a>
-        <a className="guestbook-social-card review" href={googleReviews || undefined} target={googleReviews ? "_blank" : undefined} rel="noreferrer" aria-disabled={!googleReviews}><span className="guestbook-card-icon"><Star size={20}/></span><span><strong>Guest reviews</strong><small>Read or share an authentic review</small></span><ExternalLink size={15}/></a>
-        <a className="guestbook-social-card instagram" href={instagram || undefined} target={instagram ? "_blank" : undefined} rel="noreferrer" aria-disabled={!instagram}><span className="guestbook-card-icon"><Instagram size={20}/></span><span><strong>Instagram</strong><small>Follow The Aurelia moments</small></span><ExternalLink size={15}/></a>
+        <ProfileCard className="guestbook-social-card google" href={googleBusiness} itemId="google_business_profile" icon={<MapPin size={20}/>} title="Google Business" subtitle="Find the hotel and plan your visit"/>
+        <ProfileCard className="guestbook-social-card review" href={googleReviews} itemId="google_review" icon={<Star size={20}/>} title="Guest reviews" subtitle="Read or share an authentic review"/>
+        <ProfileCard className="guestbook-social-card instagram" href={instagram} itemId="instagram" icon={<Instagram size={20}/>} title="Instagram" subtitle="Follow The Aurelia moments"/>
         <div className="guestbook-wedding-note"><Quote size={18}/><div><strong>Planning a wedding?</strong><p>Share your date, guest count and preferred venue. Our team will prepare a personalised quotation.</p><a href="/weddings">Enquire about weddings <ArrowRight size={14}/></a></div><Heart size={18}/></div>
         {!googleBusiness && !googleReviews && !instagram && <small className="guestbook-config-note">Official Google and Instagram links will appear here once added to the production environment.</small>}
       </aside>
     </div>
   </section>;
+}
+
+type ProfileCardProps = { className: string; href?: string; itemId: string; icon: ReactNode; title: string; subtitle: string };
+
+/** A real link when the official URL is configured; otherwise the same card as non-link text (no href-less anchors for crawlers). */
+function ProfileCard({ className, href, itemId, icon, title, subtitle }: ProfileCardProps) {
+  const body = <><span className="guestbook-card-icon">{icon}</span><span><strong>{title}</strong><small>{subtitle}</small></span><ExternalLink size={15}/></>;
+  if (!href) return <span className={className} aria-disabled="true">{body}</span>;
+  return <a className={className} href={href} target="_blank" rel="noopener noreferrer" onClick={() => trackEvent("select_content", { content_type: "outbound_profile", item_id: itemId, location: "guestbook" })}>{body}</a>;
 }

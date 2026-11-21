@@ -7,7 +7,9 @@ const money = (amount: number, currency = "INR") =>
     maximumFractionDigits: 2,
   }).format(amount);
 
-function shell(title: string, preheader: string, content: string) {
+const DEFAULT_FOOTER = "We look forward to welcoming you.<br>\n          Please keep your reservation reference for future communication.";
+
+function shell(title: string, preheader: string, content: string, footer: string = DEFAULT_FOOTER) {
   return `<!doctype html>
 <html lang="en">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
@@ -27,8 +29,7 @@ function shell(title: string, preheader: string, content: string) {
         </td></tr>
         <tr><td align="center" style="background:#172820;padding:22px 24px;color:#d8d8ce;font-size:11px;line-height:1.7;">
           <span style="font-family:Georgia,serif;font-size:17px;color:#e4d2ad;">The Aurelia</span><br>
-          We look forward to welcoming you.<br>
-          Please keep your reservation reference for future communication.
+          ${footer}
         </td></tr>
       </table>
     </td></tr>
@@ -86,4 +87,33 @@ export function hotelNoticeEmail(input: {
 }) {
   const content = `<p style="font-size:14px;line-height:1.8;color:#626b63;">${escapeHtml(input.intro)}</p>${details(input.rows)}`;
   return shell(escapeHtml(input.title), input.intro, content);
+}
+
+/**
+ * Post-stay Google review request. Same message for every checked-out guest (no review gating,
+ * no incentives), as Google's review policy requires.
+ */
+export function googleReviewRequestEmail(input: {
+  guestName: string; reference: string; checkIn: string; checkOut: string; reviewUrl: string;
+}) {
+  const reviewUrl = escapeHtml(input.reviewUrl);
+  const content = `
+    <p style="font-size:15px;line-height:1.8;">Dear ${escapeHtml(input.guestName)},</p>
+    <p style="font-size:14px;line-height:1.8;color:#626b63;">Thank you for staying with us at The Aurelia Hotel &amp; Resort. We hope your time with us was comfortable and that you are travelling home with good memories.</p>
+    <p style="font-size:14px;line-height:1.8;color:#626b63;">Would you take a minute to share your experience on Google? Your honest review helps future guests plan their stay, and it helps our team keep improving.</p>
+    <table role="presentation" cellspacing="0" cellpadding="0" style="margin:26px auto;">
+      <tr><td align="center" style="background:#172820;">
+        <a href="${reviewUrl}" target="_blank" rel="noopener" style="display:inline-block;padding:15px 30px;font-size:12px;letter-spacing:2px;color:#f7f0e3;text-decoration:none;font-weight:bold;">WRITE A GOOGLE REVIEW</a>
+      </td></tr>
+    </table>
+    ${details([["Stay", `${input.checkIn} to ${input.checkOut}`], ["Reference", input.reference]])}
+    <p style="font-size:13px;line-height:1.8;color:#626b63;">If anything during your stay did not meet your expectations, you can also reply to this email and our management team will personally look into it.</p>
+    <p style="font-size:12px;line-height:1.7;color:#8a918b;">Button not working? Copy this link into your browser:<br><a href="${reviewUrl}" style="color:#9a7945;word-break:break-all;">${reviewUrl}</a></p>
+    <p style="font-size:14px;line-height:1.8;">With gratitude,<br><strong>The Aurelia Hotel &amp; Resort</strong></p>`;
+  return shell(
+    "Thank you for staying with us.",
+    "How was your stay at The Aurelia? Share your experience on Google.",
+    content,
+    "Thank you for choosing The Aurelia.<br>\n          We hope to welcome you back soon.",
+  );
 }

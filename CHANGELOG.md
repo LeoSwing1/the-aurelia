@@ -1,5 +1,33 @@
 # Changelog
 
+## 2026-11-21 — Stabilisation, performance and marketing pass
+**Fixes**
+- The deployed commit still had the every-minute cron in `vercel.json`, so Vercel Hobby deploys failed and the cron routes returned 404. `vercel.json` now has daily crons only; reminders run through Supabase pg_cron (migrations 202611180002 and 202611180003).
+- Removed the stale root `middleware.ts`. `src/middleware.ts` is the only middleware.
+- **Mobile layout:** the homepage intro headline and the room, venue, facility and experience grids pushed phone pages to 419–502px wide. Phones zoomed the page out and the layout jumped (CLS 0.14). Every public page now fits the screen exactly. Desktop and tablet are unchanged.
+- Payment links, canonical URLs, the sitemap and robots.txt no longer use `http://localhost:3000` when `NEXT_PUBLIC_SITE_URL` is unset or local on Vercel; they fall back to the Vercel production domain.
+- The `G-XXXXXXXXXX` placeholder GA ID no longer loads Google Analytics.
+- Admin Settings and Integrations now flag a free-mailbox `EMAIL_FROM` (Gmail etc.), a placeholder GA ID and a missing Google review link.
+- Guest email addresses are masked in server logs.
+- Security: overrode the nested PostCSS version (`npm audit`: 0 vulnerabilities). Added an HSTS header.
+
+**Performance (no visual change)**
+- Guestbook animations use framer-motion `LazyMotion` with `domAnimation`: homepage JS is 46.3 kB → 35.6 kB.
+- Inlined the stylesheet (`experimental.inlineCss`), which removes the render-blocking CSS request. Added `optimizePackageImports` for framer-motion and date-fns.
+- Below-the-fold homepage sections use `content-visibility:auto`.
+- The consent banner is server-rendered, so it no longer paints late as the page's LCP element. Returning visitors are hidden before paint.
+- The brand splash plays once per browser session instead of on every page load or refresh.
+- Local mobile Lighthouse on the homepage: performance 87 → 91–95, CLS 0, SEO 92 → 100 on all public pages.
+
+**SEO, accessibility, marketing**
+- Guestbook profile cards render as text, not as crawlable-anchor failures (`<a>` without `href`), until their URLs are set. Links use `rel="noopener noreferrer"`.
+- Consent banner is no longer an `<aside role="dialog">`. The logo link's accessible name now matches its visible text.
+- New consent-gated **Meta Pixel** (`NEXT_PUBLIC_META_PIXEL_ID`):
+  - PageView
+  - Lead on stay and event enquiries
+  - InitiateCheckout and AddPaymentInfo on payment
+- GBP Level 1 post-stay Google review requests are included (migration 202611180003).
+
 ## 2026-11-16 — Integrated development pass
 - Combined the latest public-site design with the hotel platform modules and Supabase migration.
 - Added staff authentication gate, role-based admin navigation and server-side page/API role checks.

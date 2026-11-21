@@ -1,8 +1,10 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabase } from "@/lib/env";
 import { AdminLiveNotifications } from "@/components/admin-live-notifications";
+export const metadata: Metadata = { title: "Admin", robots: { index: false, follow: false, nocache: true, googleBot: { index: false, follow: false } } };
 const nav=[
  ["Overview","/admin",["SUPER_ADMIN","GENERAL_MANAGER","RECEPTION","FINANCE"]],
  ["Reservations","/admin/reservations",["SUPER_ADMIN","GENERAL_MANAGER","RECEPTION","FINANCE"]],

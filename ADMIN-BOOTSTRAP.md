@@ -49,7 +49,7 @@ Set nightly base rates in Admin → Rooms → Room names, prices & capacity. Ver
 
 ## 5. Cron configuration
 
-`vercel.json` schedules the payment-hold expiry endpoint hourly. Add a strong `CRON_SECRET` to Vercel Production and Preview environment variables. Vercel sends the cron authorization header. Run a manual authenticated test after deployment.
+`vercel.json` schedules the payment-hold expiry endpoint once daily (Vercel Hobby limit). Scheduler reminders run every minute through Supabase pg_cron; see `SCHEDULER-SETUP.md`. Add a strong `CRON_SECRET` to Vercel Production and Preview environment variables. Vercel sends the cron authorization header. Run a manual authenticated test after deployment.
 
 ## 6. Production secrets
 

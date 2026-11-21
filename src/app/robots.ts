@@ -1,5 +1,10 @@
 import type { MetadataRoute } from "next";
+import { absoluteUrl, siteUrl } from "@/lib/seo";
+
 export default function robots(): MetadataRoute.Robots {
-  const base = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-  return { rules: [{ userAgent: "*", allow: "/", disallow: ["/admin", "/api/", "/staff-login", "/reservation-status"] }], sitemap: `${base.replace(/\/$/, "")}/sitemap.xml` };
+  return {
+    rules: [{ userAgent: "*", allow: "/", disallow: ["/admin", "/api/", "/staff-login", "/reservation-status", "/pay"] }],
+    sitemap: absoluteUrl("/sitemap.xml"),
+    host: siteUrl(),
+  };
 }

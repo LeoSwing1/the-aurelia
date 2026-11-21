@@ -1,3 +1,4 @@
+import { pageMetadata } from "@/lib/seo";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowDown, ArrowUpRight, MoveUpRight } from "lucide-react";
@@ -6,7 +7,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { BookingBand } from "@/components/booking-band";
 import { Guestbook } from "@/components/guestbook";
 
-export const metadata={title:{absolute:"The Aurelia | Hotel & Resort"},description:"Discover The Aurelia Hotel & Resort: considered stays, meaningful gatherings and celebrations. Explore rooms, venues and facilities."};
+export const metadata=pageMetadata({title:"The Aurelia | Hotel & Resort",absoluteTitle:true,path:"/",description:"Discover The Aurelia Hotel & Resort: considered stays, meaningful gatherings and celebrations. Explore rooms, wedding and banquet venues, and facilities.",keywords:["The Aurelia","hotel and resort","hotel rooms","wedding venue","banquet hall","event venue"]});
 const stories=[
  {n:"01",eyebrow:"THE STAY",title:"A quieter kind of escape.",copy:"Thoughtfully considered spaces invite you to slow down, settle in and make the most of every moment.",image:"https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=1400&q=85",href:"/rooms",link:"EXPLORE ROOMS"},
  {n:"02",eyebrow:"CELEBRATIONS",title:"Moments worth gathering for.",copy:"From intimate occasions to grand celebrations, discover spaces made for coming together.",image:"https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=1400&q=85",href:"/weddings",link:"DISCOVER CELEBRATIONS"},

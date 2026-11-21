@@ -7,6 +7,10 @@ export function AureliaLoadingSplash() {
   const [leaving, setLeaving] = useState(false);
 
   useEffect(() => {
+    // Already shown in this browser session: skip it (the html class also hides it before hydration).
+    let seen = false;
+    try { seen = Boolean(window.sessionStorage.getItem("aurelia-splash-seen")); window.sessionStorage.setItem("aurelia-splash-seen", "1"); } catch { /* storage blocked: keep the original behaviour */ }
+    if (seen) { setVisible(false); return; }
     const minimum = window.setTimeout(() => setLeaving(true), 1000);
     const finish = window.setTimeout(() => setVisible(false), 1350);
     return () => {

@@ -14,8 +14,8 @@ export function SiteHeader(){
     return ()=>window.removeEventListener("scroll",update);
   },[]);
   return <header className={`site-header${compact?" is-compact":""}`}>
-    <Link href="/" className="brand-lockup" onClick={()=>setOpen(false)} aria-label="The Aurelia home">
-      <span className="brand-mark">A</span><span className="brand-name">THE AURELIA<small>HOTEL & RESORT</small></span>
+    <Link href="/" className="brand-lockup" onClick={()=>setOpen(false)}>
+      <span className="brand-mark" aria-hidden="true">A</span><span className="brand-name">THE AURELIA<small>HOTEL & RESORT</small></span>
     </Link>
     <nav className="desktop-nav">{links.map(([label,href])=><Link href={href} key={href}>{label}</Link>)}</nav>
     <div className="header-actions"><Link href="/book" className="header-book">RESERVE YOUR STAY <ArrowUpRight size={14}/></Link><button className="mobile-menu" onClick={()=>setOpen(!open)} aria-label="Toggle navigation">{open?<X/>:<Menu/>}</button></div>

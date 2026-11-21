@@ -1,7 +1,8 @@
 "use client";
+import { trackEvent } from "@/lib/analytics";
 
 import { useMemo, useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, LazyMotion, domAnimation, m, useReducedMotion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Instagram, MapPin, Quote, Star } from "lucide-react";
 
 type Spread = { eyebrow: string; title: string; body: string; note: string; kind: "intro" | "google" | "instagram" | "wedding" | "guest" };
@@ -20,7 +21,7 @@ export function GuestbookFlipbook({ variant = "all" }: { variant?: "all" | "wedd
   const items = useMemo(() => variant === "weddings" ? spreads.filter((s) => ["intro", "wedding", "guest", "google"].includes(s.kind)) : spreads, [variant]);
   const current = items[page];
   const googleUrl = process.env.NEXT_PUBLIC_GOOGLE_BUSINESS_URL;
-  const reviewUrl = process.env.NEXT_PUBLIC_GOOGLE_REVIEW_URL || googleUrl;
+  const reviewUrl = process.env.NEXT_PUBLIC_GOOGLE_REVIEWS_URL || process.env.NEXT_PUBLIC_GOOGLE_REVIEW_URL || googleUrl;
   const instagramUrl = process.env.NEXT_PUBLIC_INSTAGRAM_URL;
   const turn = (direction: number) => setPage((p) => Math.max(0, Math.min(items.length - 1, p + direction)));
 
@@ -34,8 +35,8 @@ export function GuestbookFlipbook({ variant = "all" }: { variant?: "all" | "wedd
       <div className="guestbook-stage">
         <div className="guestbook-book" aria-live="polite">
           <div className="guestbook-spine" aria-hidden="true" />
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.article
+          <LazyMotion features={domAnimation} strict><AnimatePresence mode="wait" initial={false}>
+            <m.article
               key={`${variant}-${page}`}
               className={`guestbook-page guestbook-page-${current.kind}`}
               initial={reduced ? { opacity: 0 } : { opacity: 0, rotateY: page === 0 ? -8 : 18, x: 28 }}
@@ -50,14 +51,14 @@ export function GuestbookFlipbook({ variant = "all" }: { variant?: "all" | "wedd
                 <h3>{current.title}</h3>
                 <p>{current.body}</p>
                 {current.kind === "google" && <div className="guestbook-links"><a href={googleUrl || "#guestbook-links"} target={googleUrl ? "_blank" : undefined} rel="noreferrer" aria-disabled={!googleUrl} onClick={!googleUrl ? (e) => e.preventDefault() : undefined}><MapPin size={16}/> View Google profile</a><a href={reviewUrl || "#guestbook-links"} target={reviewUrl ? "_blank" : undefined} rel="noreferrer" aria-disabled={!reviewUrl} onClick={!reviewUrl ? (e) => e.preventDefault() : undefined}><Star size={16}/> Write a review</a></div>}
-                {current.kind === "instagram" && <a className="guestbook-social" href={instagramUrl || "#guestbook-links"} target={instagramUrl ? "_blank" : undefined} rel="noreferrer" aria-disabled={!instagramUrl} onClick={!instagramUrl ? (e) => e.preventDefault() : undefined}><Instagram size={17}/> Follow The Aurelia on Instagram</a>}
+                {current.kind === "instagram" && <a className="guestbook-social" href={instagramUrl || "#guestbook-links"} target={instagramUrl ? "_blank" : undefined} rel="noreferrer" aria-disabled={!instagramUrl} onClick={(e) => { if (!instagramUrl) { e.preventDefault(); return; } trackEvent("select_content",{content_type:"outbound_profile",item_id:"instagram",location:"guestbook_flipbook"}); }}><Instagram size={17}/> Follow The Aurelia on Instagram</a>}
                 {current.kind === "wedding" && <div className="guestbook-quote-mark"><Quote size={28}/><span>YOUR WEDDING STORY, HERE</span></div>}
-                {current.kind === "guest" && <a className="guestbook-social" href={reviewUrl || "/contact"} target={reviewUrl ? "_blank" : undefined} rel="noreferrer"><Star size={16}/> Share your experience</a>}
+                {current.kind === "guest" && <a className="guestbook-social" onClick={()=>trackEvent("select_content",{content_type:"outbound_profile",item_id:"google_review",location:"guestbook_flipbook"})} href={reviewUrl || "/contact"} target={reviewUrl ? "_blank" : undefined} rel="noreferrer"><Star size={16}/> Share your experience</a>}
                 <small>{current.note}</small>
               </div>
               <div className="guestbook-page-bottom"><span>HOSPITALITY, WITH HEART</span><span>✦</span></div>
-            </motion.article>
-          </AnimatePresence>
+            </m.article>
+          </AnimatePresence></LazyMotion>
         </div>
         <div className="guestbook-controls"><button type="button" onClick={() => turn(-1)} disabled={page === 0} aria-label="Previous page"><ArrowLeft size={17}/><span>PREVIOUS</span></button><span className="guestbook-progress">{page + 1} <i/> {items.length}</span><button type="button" onClick={() => turn(1)} disabled={page === items.length - 1} aria-label="Next page"><span>NEXT</span><ArrowRight size={17}/></button></div>
       </div>
